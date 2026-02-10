@@ -24,7 +24,13 @@ Now clone the Git repository and run
 python scripts/ups_dashboard.py --host <battery_ip_address> --verbose
 ```
 
-If all went well, you should see your battery stats in the console. You may need to check your router DHCP server to find the IP address. Pressing 1,2 or 3 will allow you to 
+If all went well, you should see your battery stats in the console. You may need to check your router DHCP server to find the IP address. Pressing 1,2 or 3 will allow you to toggle the power relays.
+
+## Python prerequisites
+To install the python prerequsites, just run:
+```
+python -m pip install paho-mqtt
+```
 
 ## Run the HomeAssistant monitor
 A MQTT configuration is required to connect to your HomeAssistant instance. First install the MQTT plug-in for HomeAssistant if this isn't already installed. 
@@ -33,7 +39,7 @@ From ```Settings>Devices and Services``` click the ```Add integration``` button 
 Enter MQTT into the search and click the right arrow. A menu of MQTT functions will appear, just select MQTT again.
 When MQTT has installed, you'll be asked to configure the plug-in with a user ID and password. Choose something secure and remember your choice.
 
-Copy ```secrets.py-template``` to ```secret.py``` inside the scripts folder and edit the content with your HomeAssistant instance information.
+Copy ```secrets.py-template``` to ```secrets.py``` inside the scripts folder and edit the content with your HomeAssistant instance information.
 Inside this file the parameters are:
 * MQTT_BROKER - Your hostname or IP address of your HomeAssistant instance
 * MQTT_PORT - Leave this at the default 1883 unless you changed it in your HomsAssistant configuration
@@ -46,8 +52,8 @@ python .\scripts\mqtt_client.py --ups-host <battery_ip_address> --verbose
 ```
 or
 ```bash
-python ./scripts/mqtt_client.py --ups-host <battery_ip_addressp> --verbose
+python ./scripts/mqtt_client.py --ups-host <battery_ip_address> --verbose
 ```
-Running the monitor with verbose for the first time will show some debug information to show you that it's working. Look for any errors, such as ```unable to connect``` messages.
+Running the monitor with verbose for the first time will show some debug information to show you that it's working. Look for any errors, such as ```connection error: timed out``` messages.
 
 The monitor runs silently without the ```--verbose``` flag and can be run this way in production to lighten the load on the server. Adjust the ```--interval``` to control how often HomeAssistant is updated with the battery state. More frequently will be more responsive, but will add to your HomeAssistant load and could slow other operations.

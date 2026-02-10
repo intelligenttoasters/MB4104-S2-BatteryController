@@ -19,9 +19,35 @@ After providing the password, your battery will connect to your WIFI. You should
 Now you can turn **off** your bluetooth. If everything is set up correctly, you'll still be able to see your battery stats and control the relays from the app.
 
 ## Download and run the test application
-Now clone the Git repository and run python scripts/ups_dashboard.py --host <battery_ip_address> --verbose
+Now clone the Git repository and run 
+```bash
+python scripts/ups_dashboard.py --host <battery_ip_address> --verbose
+```
 
-If all went well, you should see your battery stats in the console. You may need to check your router DHCP server to find the IP address. 
+If all went well, you should see your battery stats in the console. You may need to check your router DHCP server to find the IP address. Pressing 1,2 or 3 will allow you to 
 
 ## Run the HomeAssistant monitor
-Running the HomeAssistant monitor is as simple as running the python script...tbc...
+A MQTT configuration is required to connect to your HomeAssistant instance. First install the MQTT plug-in for HomeAssistant if this isn't already installed. 
+
+From ```Settings>Devices and Services``` click the ```Add integration``` button in the bottom right corner of the Window.
+Enter MQTT into the search and click the right arrow. A menu of MQTT functions will appear, just select MQTT again.
+When MQTT has installed, you'll be asked to configure the plug-in with a user ID and password. Choose something secure and remember your choice.
+
+Copy ```secrets.py-template``` to ```secret.py``` inside the scripts folder and edit the content with your HomeAssistant instance information.
+Inside this file the parameters are:
+* MQTT_BROKER - Your hostname or IP address of your HomeAssistant instance
+* MQTT_PORT - Leave this at the default 1883 unless you changed it in your HomsAssistant configuration
+* MQTT_USERNAME - This is the username you selected when configuring the MQTT plug-in
+* MQTT_PASSWORD - This is the password you selected when configuring the MQTT plug-in
+
+Now, running the HomeAssistant monitor is as simple as running the python script with
+```cmd
+python .\scripts\mqtt_client.py --ups-host <battery_ip_address> --verbose
+```
+or
+```bash
+python ./scripts/mqtt_client.py --ups-host <battery_ip_addressp> --verbose
+```
+Running the monitor with verbose for the first time will show some debug information to show you that it's working. Look for any errors, such as ```unable to connect``` messages.
+
+The monitor runs silently without the ```--verbose``` flag and can be run this way in production to lighten the load on the server. Adjust the ```--interval``` to control how often HomeAssistant is updated with the battery state. More frequently will be more responsive, but will add to your HomeAssistant load and could slow other operations.

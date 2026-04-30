@@ -289,14 +289,28 @@ class PowertechMQTTClient:
         self.client.on_message = self.on_message
         
     def on_connect(self, client, userdata, connect_flags, reason_code, properties):
-        """Callback for when the client connects to the broker"""
+        """Callback for when the client connects to the broker.
+
+        Fires on the initial connect and on every auto-reconnect performed by
+        paho's network loop. The broker discards subscriptions when the session
+        ends, so we must re-subscribe here on every successful (re)connect once
+        initialization has completed; otherwise HomeAssistant command messages
+        silently stop being delivered after the first network blip.
+        """
         if reason_code == 0:
             log.info(f"Connected to MQTT broker at {self.broker}:{self.mqtt_port}")
             # Publish availability status
             self.client.publish(AVAILABILITY_TOPIC, "online", qos=1, retain=True)
             log.debug(f"Published: {AVAILABILITY_TOPIC} = online")
-            # Note: Subscriptions will be added in run() method after initialization is complete
-            # This prevents processing stale retained messages while initialization_complete = False
+            # Re-subscribe to command topics on reconnect. On the initial connect
+            # `initialization_complete` is still False and run() will perform the
+            # first subscribe after publishing initial state; after that, every
+            # reconnect must restore the subscriptions here.
+            if self.initialization_complete:
+                self.client.subscribe(USB_POWER_COMMAND_TOPIC, qos=1)
+                self.client.subscribe(DC12V10A_COMMAND_TOPIC, qos=1)
+                self.client.subscribe(AC_POWER_COMMAND_TOPIC, qos=1)
+                log.info("Re-subscribed to command topics after reconnect")
         else:
             log.error(f"Failed to connect to MQTT broker, return code {reason_code}")
     
